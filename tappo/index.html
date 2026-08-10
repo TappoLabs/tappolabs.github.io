@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tappo — Auto Tapper for Android</title>
+  <meta name="description" content="Tappo automates repetitive taps, swipes, and pinches on your Android device — a friendly assistive auto-clicker with recording, per-app profiles, and precise controls." />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Tappo — Auto Tapper for Android" />
+  <meta property="og:description" content="Automate repetitive taps, swipes, and pinches. A friendly assistive auto-clicker for Android." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://tappolabs.github.io/tappo/" />
+  <meta property="og:image" content="https://tappolabs.github.io/tappo/icon.png" />
+
+  <link rel="icon" type="image/png" href="icon.png" />
+  <link rel="apple-touch-icon" href="icon.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --paper: #FBF7EF;
+      --paper2: #F3ECDD;
+      --ink: #1B1A17;
+      --coral: #FF6B5E;
+      --coral-dk: #E8503F;
+      --mint: #4FC7A6;
+      --sky: #5AA9E6;
+      --sun: #FFC24B;
+      --muted: #6b675f;
+      --card: #ffffff;
+      --shadow: 5px 5px 0 var(--ink);
+      --shadow-sm: 3px 3px 0 var(--ink);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "DM Sans", -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    h1, h2, h3, .brand-name, .btn { font-family: "Fredoka", "DM Sans", sans-serif; }
+    a { color: var(--coral-dk); }
+    .wrap { max-width: 1040px; margin: 0 auto; padding: 0 22px; }
+
+    /* ---- buttons ---- */
+    .btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--coral); color: #fff;
+      border: 2.5px solid var(--ink); border-radius: 14px;
+      padding: 13px 22px; font-size: 17px; font-weight: 600;
+      text-decoration: none; box-shadow: var(--shadow-sm);
+      transition: transform .12s ease, box-shadow .12s ease;
+      cursor: pointer;
+    }
+    .btn:hover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--ink); }
+    .btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--ink); }
+    .btn.ghost { background: #fff; color: var(--ink); }
+
+    /* ---- header ---- */
+    header {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(251,247,239,.88); backdrop-filter: blur(8px);
+      border-bottom: 2px solid var(--ink);
+    }
+    .nav { display: flex; align-items: center; justify-content: space-between; padding: 12px 22px; max-width: 1040px; margin: 0 auto; }
+    .brand { display: flex; align-items: center; gap: 11px; text-decoration: none; color: var(--ink); }
+    .brand img { width: 40px; height: 40px; border: 2px solid var(--ink); border-radius: 11px; box-shadow: 2px 2px 0 var(--ink); }
+    .brand-name { font-size: 24px; font-weight: 700; letter-spacing: -.01em; }
+    .nav .btn { padding: 9px 16px; font-size: 15px; }
+
+    /* ---- hero ---- */
+    .hero { position: relative; padding: 70px 0 40px; text-align: center; }
+    .hero-logo {
+      width: 118px; height: 118px; border: 3px solid var(--ink); border-radius: 30px;
+      box-shadow: var(--shadow); margin-bottom: 22px; animation: bob 3.5s ease-in-out infinite;
+    }
+    @keyframes bob { 0%,100%{ transform: translateY(0) rotate(-2deg);} 50%{ transform: translateY(-10px) rotate(2deg);} }
+    .hero h1 { font-size: clamp(40px, 7vw, 68px); line-height: 1.05; margin: 0 0 14px; letter-spacing: -.03em; }
+    .hero h1 .hl { color: var(--coral); }
+    .hero p.lead { font-size: clamp(17px, 2.4vw, 21px); color: var(--muted); max-width: 620px; margin: 0 auto 30px; }
+    .cta-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .pill { display:inline-flex; align-items:center; gap:7px; background: var(--paper2); border: 2px solid var(--ink); border-radius: 999px; padding: 6px 15px; font-size: 14px; font-weight: 600; margin-bottom: 26px; box-shadow: var(--shadow-sm); }
+    .pill .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--mint); }
+
+    /* decorative floating crosshairs */
+    .float { position: absolute; opacity: .5; pointer-events: none; }
+    .float svg { display:block; }
+    .f1 { top: 90px; left: 6%; animation: spin 22s linear infinite; }
+    .f2 { top: 210px; right: 7%; animation: spin 30s linear infinite reverse; }
+    .f3 { bottom: 10px; left: 12%; animation: spin 26s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (max-width: 680px) { .float { display: none; } }
+
+    /* ---- section ---- */
+    section { padding: 56px 0; }
+    .sec-head { text-align: center; margin-bottom: 40px; }
+    .sec-head h2 { font-size: clamp(28px, 4.5vw, 40px); margin: 0 0 8px; letter-spacing: -.02em; }
+    .sec-head p { color: var(--muted); margin: 0; font-size: 17px; }
+
+    /* ---- feature grid ---- */
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+    .card {
+      background: var(--card); border: 2.5px solid var(--ink); border-radius: 20px;
+      padding: 24px; box-shadow: var(--shadow);
+      transition: transform .14s ease, box-shadow .14s ease;
+    }
+    .card:hover { transform: translate(-3px,-3px); box-shadow: 8px 8px 0 var(--ink); }
+    .card .ic { width: 52px; height: 52px; border-radius: 14px; border: 2.5px solid var(--ink); display: grid; place-items: center; margin-bottom: 14px; box-shadow: var(--shadow-sm); }
+    .card h3 { margin: 0 0 6px; font-size: 20px; }
+    .card p { margin: 0; color: var(--muted); font-size: 15.5px; }
+    .card .badge { display:inline-block; margin-left:8px; font-size:11px; font-family:"Fredoka",sans-serif; font-weight:600; background: var(--sun); color: var(--ink); border:2px solid var(--ink); border-radius:999px; padding:1px 9px; vertical-align:middle; }
+
+    /* ---- how it works ---- */
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; counter-reset: step; }
+    .step { background: var(--paper2); border: 2.5px solid var(--ink); border-radius: 20px; padding: 26px 22px; box-shadow: var(--shadow-sm); position: relative; }
+    .step .num { counter-increment: step; }
+    .step .num::before { content: counter(step); position: absolute; top: -18px; left: 20px; width: 40px; height: 40px; background: var(--coral); color:#fff; border: 2.5px solid var(--ink); border-radius: 50%; display: grid; place-items: center; font-family:"Fredoka",sans-serif; font-weight: 700; font-size: 20px; box-shadow: 2px 2px 0 var(--ink); }
+    .step h3 { margin: 14px 0 6px; font-size: 19px; }
+    .step p { margin: 0; color: var(--muted); font-size: 15px; }
+
+    /* ---- free vs pro ---- */
+    .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    @media (max-width: 640px){ .compare { grid-template-columns: 1fr; } }
+    .plan { background:#fff; border:2.5px solid var(--ink); border-radius:22px; padding:28px; box-shadow: var(--shadow); }
+    .plan.pro { background: linear-gradient(180deg,#fff, #FFF4E6); position: relative; }
+    .plan h3 { margin: 0 0 4px; font-size: 26px; }
+    .plan .price { color: var(--muted); font-size:15px; margin: 0 0 18px; }
+    .plan ul { list-style: none; padding: 0; margin: 0; }
+    .plan li { padding: 8px 0 8px 30px; position: relative; font-size: 15.5px; border-top: 1px dashed #e3ddd0; }
+    .plan li:first-child { border-top: none; }
+    .plan li::before { content: "✓"; position: absolute; left: 0; top: 8px; width: 20px; height: 20px; background: var(--mint); color:#fff; border-radius:50%; display:grid; place-items:center; font-size: 12px; font-weight: 700; }
+    .plan.pro li::before { background: var(--sun); color: var(--ink); }
+    .ribbon { position:absolute; top:-14px; right:22px; background: var(--sun); border:2.5px solid var(--ink); border-radius:999px; padding:3px 14px; font-family:"Fredoka",sans-serif; font-weight:700; font-size:13px; box-shadow:2px 2px 0 var(--ink); }
+
+    /* ---- accessibility note ---- */
+    .note { background: var(--paper2); border: 2.5px dashed var(--ink); border-radius: 20px; padding: 26px 28px; max-width: 760px; margin: 0 auto; }
+    .note h3 { margin: 0 0 8px; font-size: 20px; }
+    .note p { margin: 0; color: var(--muted); font-size: 15.5px; }
+
+    /* ---- final cta ---- */
+    .final { text-align: center; background: var(--ink); color: var(--paper); border-radius: 28px; padding: 54px 26px; box-shadow: var(--shadow); }
+    .final h2 { color: #fff; font-size: clamp(28px, 5vw, 44px); margin: 0 0 10px; }
+    .final p { color: #cfc9bd; margin: 0 0 26px; font-size: 18px; }
+    .final .btn.ghost { background: var(--paper); }
+
+    /* ---- footer ---- */
+    footer { border-top: 2px solid var(--ink); margin-top: 60px; padding: 34px 0; }
+    .foot { display:flex; align-items:center; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
+    .foot .brand-name { font-size: 20px; }
+    .foot a { color: var(--muted); text-decoration: none; font-weight: 500; font-size: 15px; }
+    .foot a:hover { color: var(--coral-dk); }
+    .foot .links { display:flex; gap: 20px; flex-wrap: wrap; }
+    .copy { color: var(--muted); font-size: 13.5px; margin-top: 14px; }
+  </style>
+</head>
+<body>
+  <header>
+    <nav class="nav">
+      <a class="brand" href="#top">
+        <img src="icon.png" alt="Tappo icon" />
+        <span class="brand-name">Tappo</span>
+      </a>
+      <a class="btn" href="https://play.google.com/store/apps/details?id=com.tappo.autotapper" target="_blank" rel="noopener">Get it on Play ▸</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="wrap">
+        <span class="float f1"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#FF6B5E" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></span>
+        <span class="float f2"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#5AA9E6" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></span>
+        <span class="float f3"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#4FC7A6" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></span>
+
+        <img class="hero-logo" src="icon.png" alt="Tappo app icon" />
+        <div><span class="pill"><span class="dot"></span> Android · Free to start</span></div>
+        <h1>Repetitive tapping,<br /><span class="hl">handled for you.</span></h1>
+        <p class="lead">Tappo places friendly crosshair targets over any app and auto-injects taps, swipes, and pinches — precise, adjustable, and easy to stop.</p>
+        <div class="cta-row">
+          <a class="btn" href="https://play.google.com/store/apps/details?id=com.tappo.autotapper" target="_blank" rel="noopener">Download on Google Play</a>
+          <a class="btn ghost" href="#features">See features</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features">
+      <div class="wrap">
+        <div class="sec-head">
+          <h2>Everything an auto-tapper should do</h2>
+          <p>Simple by default. Powerful when you need it.</p>
+        </div>
+        <div class="grid">
+          <div class="card">
+            <div class="ic" style="background:var(--coral)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><circle cx="12" cy="12" r="3.5"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg></div>
+            <h3>Place tap points</h3>
+            <p>Drag crosshair targets anywhere on screen. Tap one spot or many at once.</p>
+          </div>
+          <div class="card">
+            <div class="ic" style="background:var(--sky)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M12 7v5l3 2"/><circle cx="12" cy="12" r="8.5"/></svg></div>
+            <h3>Speed &amp; run limits</h3>
+            <p>Dial in the interval, then stop after a timer or a set number of iterations.</p>
+          </div>
+          <div class="card">
+            <div class="ic" style="background:var(--mint)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M4 12c4-6 12-6 16 0"/><path d="M4 12c4 6 12 6 16 0"/></svg></div>
+            <h3>Swipes &amp; pinches <span class="badge">Pro</span></h3>
+            <p>Go beyond taps with directional swipes and two-finger pinch gestures.</p>
+          </div>
+          <div class="card">
+            <div class="ic" style="background:var(--sun)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1B1A17" stroke-width="2.2"><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="9"/></svg></div>
+            <h3>Record &amp; replay <span class="badge">Pro</span></h3>
+            <p>Record a real gesture sequence with natural timing, then play it back on loop.</p>
+          </div>
+          <div class="card">
+            <div class="ic" style="background:var(--coral)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></div>
+            <h3>Per-app profiles <span class="badge">Pro</span></h3>
+            <p>Save setups per app and auto-switch when that app comes to the foreground.</p>
+          </div>
+          <div class="card">
+            <div class="ic" style="background:var(--sky)"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M12 3v9M8 7l4-4 4 4"/><path d="M5 14v5a1 1 0 001 1h12a1 1 0 001-1v-5"/></svg></div>
+            <h3>Randomization <span class="badge">Pro</span></h3>
+            <p>Add jitter to timing and coordinates so runs feel less mechanical.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section style="background:var(--paper2); border-top:2px solid var(--ink); border-bottom:2px solid var(--ink);">
+      <div class="wrap">
+        <div class="sec-head">
+          <h2>Three taps to running</h2>
+          <p>No setup headaches — grant access once and go.</p>
+        </div>
+        <div class="steps">
+          <div class="step"><div class="num"></div><h3>Enable access</h3><p>Turn on the accessibility &amp; overlay permissions so Tappo can draw targets and inject taps.</p></div>
+          <div class="step"><div class="num"></div><h3>Place &amp; tune</h3><p>Drop your tap points, then set the speed and how long it should keep going.</p></div>
+          <div class="step"><div class="num"></div><h3>Start &amp; stop</h3><p>Hit start. A floating Stop button always sits on top so you're in control.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FREE VS PRO -->
+    <section>
+      <div class="wrap">
+        <div class="sec-head">
+          <h2>Free to start, Pro to go further</h2>
+          <p>One-time unlock. No subscription.</p>
+        </div>
+        <div class="compare">
+          <div class="plan">
+            <h3>Free</h3>
+            <p class="price">Always free</p>
+            <ul>
+              <li>Single tap point</li>
+              <li>Repeating tap loop with adjustable speed</li>
+              <li>Floating controls &amp; emergency stop</li>
+            </ul>
+          </div>
+          <div class="plan pro">
+            <span class="ribbon">★ Pro</span>
+            <h3>Pro</h3>
+            <p class="price">One-time unlock · ad-free</p>
+            <ul>
+              <li>Multiple tap points</li>
+              <li>Swipe &amp; pinch gestures</li>
+              <li>Gesture recording &amp; playback</li>
+              <li>Per-app profiles &amp; auto-switch</li>
+              <li>Timing &amp; coordinate randomization</li>
+              <li>Target size &amp; opacity, run limits</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACCESSIBILITY NOTE -->
+    <section style="padding-top:0;">
+      <div class="wrap">
+        <div class="note">
+          <h3>Built as an assistive tool</h3>
+          <p>Tappo uses Android's Accessibility API to help with repetitive and hands-free tapping — useful for accessibility needs and tedious manual tasks. Please use it responsibly and follow the terms of any app you use it with.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section style="padding-top:0;">
+      <div class="wrap">
+        <div class="final">
+          <h2>Give your thumb a break.</h2>
+          <p>Download Tappo and let it do the tapping.</p>
+          <a class="btn ghost" href="https://play.google.com/store/apps/details?id=com.tappo.autotapper" target="_blank" rel="noopener">Get it on Google Play ▸</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <div class="foot">
+        <a class="brand" href="#top"><img src="icon.png" alt="" style="width:34px;height:34px;border:2px solid var(--ink);border-radius:9px;box-shadow:2px 2px 0 var(--ink);" /><span class="brand-name">Tappo</span></a>
+        <div class="links">
+          <a href="https://play.google.com/store/apps/details?id=com.tappo.autotapper" target="_blank" rel="noopener">Google Play</a>
+          <a href="https://tappolabs.github.io/tappo-privacy/" target="_blank" rel="noopener">Privacy policy</a>
+          <a href="https://tappolabs.github.io/">TappoLabs</a>
+          <a href="mailto:TappoLabs@gmail.com">Contact</a>
+        </div>
+      </div>
+      <p class="copy">© <span id="yr">2026</span> TappoLabs. Made for Android.</p>
+    </div>
+  </footer>
+
+  <script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+</body>
+</html>
